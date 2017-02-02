@@ -11,19 +11,34 @@ assembly_info:
     assembly_file_version: "{version}"
     assembly_informational_version: "{version}"
 
-build:
-    project: ElectronicObserver.sln
-
 before_build:
-    - git.exe submodule update --init -- "DockPanelSuite"
+    - git submodule update --init --recursive
     - nuget restore
     - ps: (Get-Content ElectronicObserver\Utility\SoftwareInformation.cs -Encoding UTF8).replace("<BUILD_VERSION>", "$env:APPVEYOR_BUILD_VERSION") | Set-Content ElectronicObserver\Utility\SoftwareInformation.cs -Encoding UTF8
+    - mkdir output
+
+build_script:
+    - msbuild ElectronicObserver.sln /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+    - move output output-net45
+    - mkdir output
+    - git apply net40.diff
+    - git submodule update --init --recursive
+    - nuget restore
+    - msbuild ElectronicObserver.sln /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+    - move output output-net40
 
 before_package:
-    - mkdir output\Licenses
-    - copy Licenses\*.* output\Licenses\
-    - copy LICENSE output\LICENSE
+    - mkdir output-net45\Licenses
+    - copy Licenses\*.* output-net45\Licenses\
+    - copy LICENSE output-net45\LICENSE
+    - mkdir output-net45\Plugins
+    - mkdir output-net40\Licenses
+    - copy Licenses\*.* output-net40\Licenses\
+    - copy LICENSE output-net40\LICENSE
+    - mkdir output-net40\Plugins
 
 artifacts:
-    - path: output
+    - path: output-net45
       name: 74eoe-$(APPVEYOR_BUILD_VERSION)
+    - path: output-net40
+      name: 74eoe-net40-$(APPVEYOR_BUILD_VERSION)
