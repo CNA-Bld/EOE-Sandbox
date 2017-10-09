@@ -50,6 +50,15 @@ namespace ElectronicObserver.Utility {
 					sw.WriteLine( "スタックトレース：" );
 					sw.WriteLine( ex.StackTrace );
 
+					if ( ex.InnerException != null ) {
+						Exception ie = ex.InnerException;
+						sw.WriteLine();
+						sw.WriteLine( "InnerException : {0}", ie.GetType().Name );
+						sw.WriteLine( ie.Message );
+						sw.WriteLine( "スタックトレース：" );
+						sw.WriteLine( ie.StackTrace );
+					}
+
 					if ( connectionName != null && connectionData != null ) {
 						sw.WriteLine();
 						sw.WriteLine( "通信内容 : {0}", connectionName );
